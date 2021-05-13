@@ -1,7 +1,10 @@
 package zoo
 
 import (
+	"sync"
+
 	"github.com/teratron/bingo/pkg"
+	"github.com/teratron/bingo/pkg/utils"
 )
 
 // Neuroner
@@ -19,23 +22,16 @@ const Name = "configurator"
 var _ pkg.NeuralNetwork = (*NN)(nil)
 
 type NN struct {
-	//pkg.Parameter `json:"-" yaml:"-"`
-	pkg.NeuralNetwork `json:"-" yaml:"-"`
+	pkg.NeuralNetwork
 
-	// Neural network architecture name (required field for a config).
-	Name string `json:"name" yaml:"name"`
-
-	neuron [][]*neuron
-	axon   [][][]*axon
-	//*weight
-
-	lastIndexLayer int
-	lenInput       int
-	lenOutput      int
+	isInit bool
+	config utils.Filer
+	mutex  sync.Mutex
 }
 
 type neuron struct {
 	Synapser
+
 	value    pkg.FloatType // Neuron value
 	axon     []*axon       // All incoming axons
 	specific Neuroner      // Specific option of neuron: miss (error) or other
@@ -49,8 +45,8 @@ type axon struct {
 // New return Perceptron neural network.
 func New() *NN {
 	return &NN{
-		Name: Name,
-		/*Activation: params.ModeSIGMOID,
+		/*Name: Name,
+		Activation: params.ModeSIGMOID,
 		Loss:       params.ModeMSE,
 		Limit:      .01,
 		Rate:       pkg.FloatType(params.DefaultRate),*/
